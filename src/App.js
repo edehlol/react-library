@@ -39,7 +39,7 @@ class BookForm extends React.Component {
   render() {
     return (
       <div>
-        <Form onSubmit={this.props.handleSubmit} className='newBookForm'>
+        <Form className={this.props.formType} onSubmit={this.props.handleSubmit}>
           <label>
             Title:
             <input 
@@ -75,11 +75,20 @@ class BookForm extends React.Component {
             <input 
               type='checkbox'
               name='read'
-              value={this.props.read}
+              // value={this.props.read}
+              checked={this.props.read}
               onChange={this.props.handleChange}
             />
           </label>
-          <button>Add</button>
+          {this.props.formType === 'newBookForm' &&
+            <button>Add</button>
+          }
+          {this.props.formType === 'editBookForm' &&
+          <div>
+            <button onClick={this.props.handleClickSave}>Save</button>
+            <button onClick={this.props.handleClickDelete} name='delete'>Delete</button>
+          </div>
+          }
         </Form>
       </div>
     )
@@ -88,7 +97,7 @@ class BookForm extends React.Component {
 class AddBook extends React.Component {
   render() {
     return (
-      <button>Add Book</button>
+      <button onClick={this.props.toggleForm}>Add Book</button>
     )
   }
 }
@@ -130,24 +139,76 @@ class Library extends React.Component {
       title: '',
       author: '',
       pages: '',
-      read: false
+      read: false,
+      id: null,
+      // Toggle form between adding book and editing book
+      formType: 'newBookForm',
+      formDisplayed: false
     }
+    this.toggleForm = this.toggleForm.bind(this)
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleClickEdit = this.handleClickEdit.bind(this)
+    this.handleClickSave = this.handleClickSave.bind(this)
+    this.handleClickDelete = this.handleClickDelete.bind(this)
+  }
+  clearStates() {
+    this.setState({
+      title: '',
+      author: '',
+      pages: '',
+      read: false,
+      id: null,
+      formType: 'newBookForm'
+    })
+  }
+  toggleForm() {
+    this.setState( state => ({
+      formDisplayed: state.formDisplayed ? false : true
+    }))
   }
   handleClickEdit(button) {
+    if (this.state.formDisplayed === false) {
+      this.setState({
+        formDisplayed: true
+      })
+    }
+    this.setState(state => ({
+      formType: state.formType === 'newBookForm' ? state.formType = 'editBookForm' : state.formType = 'newBookForm'
+    }))
     books.map(book => {
       if (book.id === Number(button.target.parentNode.parentNode.id)) {
         this.setState({
-          title: book.title
+          title: book.title,
+          author: book.author,
+          pages: book.pages,
+          read: book.read,
+          id: Number(button.target.parentNode.parentNode.id)
         })
       }
     })
-    console.log(button.target.parentNode.parentNode.id)
-    const test = books.map(book => 
-      console.log(book.id)
-      )
+  }
+  handleClickSave(button) {
+    button.preventDefault()
+    books.map(book => {
+      if (book.id === this.state.id) {
+        book.title = this.state.title
+        book.author = this.state.author
+        book.pages = this.state.pages
+        book.read = this.state.read
+        this.clearStates()
+      }
+    })
+  }
+  handleClickDelete(button) {
+    books.map((book, index) => {
+      alert('Are you sure you want to delete this book? This action cannot be undone.')
+      if (book.id === this.state.id) {
+        console.log(index)
+        books.splice(index,1)
+        console.log(books)
+      }
+    })
   }
   handleChange(input) {
     const target = input.target
@@ -159,7 +220,6 @@ class Library extends React.Component {
   }
   handleSubmit(form) {
     form.preventDefault()
-    console.log(form.target.classList)
     if (form.target.classList.contains('newBookForm')) {
       const book = new Book(
         this.state.title, 
@@ -169,14 +229,7 @@ class Library extends React.Component {
         )
         books.push(book)
     }
-    this.setState({
-      title: '',
-      author: '',
-      pages: '',
-      read: false
-    })
-    
-    console.log(books)
+    this.clearStates()
   }
   render() {
     return (
@@ -185,15 +238,21 @@ class Library extends React.Component {
         <BookList
           handleClickEdit={this.handleClickEdit}
         />
-        <BookForm
-          title={this.state.title}
-          author={this.state.author}
-          pages={this.state.pages}
-          read={this.state.read}
-          handleChange={this.handleChange}
-          handleSubmit={this.handleSubmit}
-        />
-        <AddBook/>
+        {(this.state.formDisplayed && 
+                  <BookForm
+                  title={this.state.title}
+                  author={this.state.author}
+                  pages={this.state.pages}
+                  read={this.state.read}
+                  handleChange={this.handleChange}
+                  handleSubmit={this.handleSubmit}
+                  handleClickSave={this.handleClickSave}
+                  handleClickDelete={this.handleClickDelete}
+                  formType={this.state.formType}
+                />
+          )}
+
+        <AddBook toggleForm={this.toggleForm}/>
       </div>
     )
   }
