@@ -30,12 +30,16 @@ const Content = styled.div`
   // position: absolute;
   // background: green;
   height: 100%;
-  width: 896px;
+  width: 72%;
   float: right;
+  @media only screen and (max-width: 1152px) {
+    width: calc(100% - 32px);
+    // margin-left: 64px;
+  }
 `
 const AddBookButton = styled.button`
   position: absolute;
-  left: 106px;
+  right: 40px;
   bottom: 40px;
   text-decoration: none;
   border: none;
@@ -75,11 +79,12 @@ class Library extends React.Component {
       pages: '',
       read: false,
       id: null,
-      titleValid: false,
-      authorValid: false,
       // Toggle form between adding book and editing book
       formType: 'newBookForm',
-      formDisplayed: false
+      formDisplayed: false,
+      // form validation
+      titleValid: null,
+      authorValid: null
     }
     this.toggleForm = this.toggleForm.bind(this)
     this.toggleFormOn = this.toggleFormOn.bind(this)
@@ -97,7 +102,9 @@ class Library extends React.Component {
       pages: '',
       read: false,
       id: null,
-      formType: 'newBookForm'
+      formType: 'newBookForm',
+      titleValid: null,
+      authorValid: null
     })
   }
   toggleFormOn() {
@@ -170,29 +177,20 @@ class Library extends React.Component {
       [name]: value
     })
   }
-  formValidation(input, type='text') {
-    console.log(input.toString())
-    if (input === '') {
-      this.setState({
-        [input]: false
-      })
-    }
+  validate(input) {
+    return input === '' ? false : true
+  }
+  validateForm() {
+    this.setState({
+      titleValid: this.validate(this.state.title),
+      authorValid: this.validate(this.state.author),
+    })
   }
   handleSubmit(form) {
     form.preventDefault()
-    this.formValidation(this.state.title)
-    if (form.target.classList.contains('newBookForm')) {
-      if (!this.formValidation(this.state.title)) {
-        // this.setState({
-        //   formValid: false
-        // })
-        console.log('fff')
-        return
-      }
-      else {
-        this.setState({
-          formValid: true
-        })
+    this.validateForm()
+    if (this.validate(this.state.title) && this.validate(this.state.author)) {
+      if (form.target.classList.contains('newBookForm')) {
         const book = new Book(
           this.state.title, 
           this.state.author,
@@ -203,8 +201,7 @@ class Library extends React.Component {
           localStorage.setItem('books', JSON.stringify(books))
       }
       this.toggleForm()
-      }
-
+    }
   }
   render() {
     let myBooks = books
@@ -224,9 +221,12 @@ class Library extends React.Component {
                     handleClickSave={this.handleClickSave}
                     handleClickDelete={this.handleClickDelete}
                     formType={this.state.formType}
+                    formDisplayed={this.state.formDisplayed}
                     toggleForm={this.toggleForm}
                     toggleFormOff={this.toggleFormOff}
                     toggleFormOn={this.toggleFormOn}
+                    titleValid={this.state.titleValid}
+                    authorValid={this.state.authorValid}
                   />
             )}
         <Content>

@@ -1,10 +1,17 @@
 import React from 'react'
-import styled from 'styled-components'
+import styled, {keyframes} from 'styled-components'
 
 
+const sidebarToggle = keyframes`
+  from {
+    left: -336px;
+  }
+  to {
+    left: 0px;
+  }
+`
 const Sidebar = styled.div`
     position: fixed;
-    left: 0;
     top: 0;
     width: 336px;
     height: 100%;
@@ -13,17 +20,21 @@ const Sidebar = styled.div`
     box-shadow: 1px 0px 2px 0px rgba(0,0,0,0.35);
     z-index: 2;
     background: #fafafa;
+    animation: ${sidebarToggle} .3s ease-in-out;
     color: #1c1c1c;
-    @media only screen and (max-width: 768px) {
+    @media only screen and (max-width: 1152px) {
       width: 100%;
+      animation: none;
     }
 `
+    
 const Title = styled.h2`
     font-size: 24px;
     font-weight: 500;
     margin-top: 0px;
     margin-right: 32px;
     text-align: right;
+    color: #1890ff;
 `
 const Form = styled.form`
   display: flex;
@@ -54,17 +65,47 @@ const Label = styled.label`
     text-align: left;
 
 `
+const noValidatedInput = '1px solid #bfbfbf;'
+
 const Input = styled.input`
     flex: 1;
     height: 24px;
     font-size: 14px;
-    border: 1px solid #bfbfbf;
     border-radius: 4px;
     padding-left: 8px;
     padding-right: 8px;
+    border: 1px solid #bfbfbf;
     &:focus {
       border: 2px solid #40a9ff;
     }
+`
+const invalidInput = {
+  border: '2px solid red;',
+  background: '#ffccc7'
+}
+const validInput = {
+  border: '1px solid #52c41a;',
+  background: '#d9f7be'
+}
+const TitleInput = styled(Input)`
+  border: ${props => 
+    props.titleValid ? validInput.border: 
+      props.titleValid === null ? noValidatedInput : invalidInput.border
+    }
+  background: ${props => 
+    props.titleValid ? validInput.background: 
+      props.titleValid === null ? noValidatedInput : invalidInput.background
+    }
+`
+const AuthorInput = styled(Input)`
+    border: ${props => 
+      props.authorValid ? validInput.border: 
+        props.authorValid === null ? noValidatedInput : invalidInput.border
+      }
+    background: ${props => 
+        props.authorValid ? validInput.background: 
+          props.authorValid === null ? noValidatedInput : invalidInput.background
+        }
 `
 const SaveButton = styled.button`
   text-decoration: none;
@@ -118,10 +159,49 @@ const DeleteButton = styled.button`
   }
 `
 
+
+const SwitchButton = styled.label`
+  display: inline-block;
+  width: 64px;
+  height: 24px;
+  border-radius: 4px;
+  position: relative;
+  background: #e8e8e8;
+  cursor: pointer;
+  border: 1px solid #bfbfbf;
+`
+const Slider = styled.span`
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: white;
+  transition: .4s;
+
+`
+const InputSwitch = styled(Input)`
+  opacity: 0;
+  &:checked + ${Slider}{
+    background: #1890ff;
+    transform: translateX(40px)
+  }
+`
+const black = 'black'
+const red = 'red'
+const FieldsAreReq = styled.p`
+  color: ${props => props.TitleInput ? black : red}
+`
+
+
 class BookForm extends React.Component {
+    
     render() {
       return (
-        <Sidebar>
+        <Sidebar formDisplayed={this.props.formDisplayed}>
             {this.props.formType === 'editBookForm' && 
                 <Title>{this.props.title}</Title>
             }
@@ -133,11 +213,12 @@ class BookForm extends React.Component {
               <Label>
                   Title*: 
               </Label>
-              <Input 
+              <TitleInput 
                   type='text' 
                   name='title'
                   value={this.props.title} 
                   onChange={this.props.handleChange}
+                  titleValid={this.props.titleValid}
               />
             </LabelAndInput>
 
@@ -145,11 +226,12 @@ class BookForm extends React.Component {
               <Label>
                 Author*:
               </Label>
-              <Input 
+              <AuthorInput 
                   type='text' 
                   name='author'
                   value={this.props.author} 
                   onChange={this.props.handleChange}
+                  authorValid={this.props.authorValid}
                 />
             </LabelAndInput>
 
@@ -160,6 +242,7 @@ class BookForm extends React.Component {
               </Label>
               <Input 
                   type='number'
+                  min='0'
                   name='pages'
                   value={this.props.pages}
                   onChange={this.props.handleChange}
@@ -170,13 +253,16 @@ class BookForm extends React.Component {
                 Read:
 
               </Label>
-              <Input 
+              <SwitchButton>
+              <InputSwitch 
                   type='checkbox'
                   name='read'
-                  // value={this.props.read}
                   checked={this.props.read}
                   onChange={this.props.handleChange}
                 />
+                <Slider/>
+              </SwitchButton>
+
             </LabelAndInput>
 
             <SaveAndCancelContainer>
@@ -196,11 +282,15 @@ class BookForm extends React.Component {
               {this.props.formType === 'editBookForm' &&
                 <DeleteButton onClick={this.props.handleClickDelete} name='delete'>Delete Book</DeleteButton>
               }
+                {(this.props.titleValid !== null || this.props.authorValid !== null) &&
+                <FieldsAreReq>*these fields are required.</FieldsAreReq>
+                }
+               
           </Form>
+             
         </Sidebar>
       )
     }
   }
               
-
 export default BookForm

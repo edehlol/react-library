@@ -8,16 +8,16 @@ const Table = styled.table`
   font-size: 14px;
   width: 100%;
   border-collapse: collapse;
-//   grid-template-columns: 208px 168px 80px 80px 104px;
+  width: calc(100% - 32px);
+  @media only screen and (max-width: 1152px) {
+    
+  }
 `
 const Tr = styled.tr`
-//   border-bottom: 1px solid; 
-// display: grid;
-// grid-template-columns:   208px 168px 80px 80px 104px;
 width: 100%;
 border-bottom: 1px solid #bfbfbf;
 height: 64px;
-// @media only screen and (max-width: 896px) {
+// @media only screen and (max-width: 1152px) {
 //     width: 80%;
 //     background: green;
 // }
